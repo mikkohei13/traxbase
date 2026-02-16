@@ -11,6 +11,7 @@
     --color-bg:          #1E2233;
     --color-surface:     #252A3C;
     --color-surface-alt: #2D3348;
+    --color-surface-alt-light: #0f6877;
     --color-border:      #363D55;
     --color-text:        #E2E4EA;
     --color-text-dim:    #b4bcdc;
@@ -58,11 +59,6 @@ a:hover {
     background: var(--color-surface);
 }
 
-.sidebar-header {
-    padding: 24px 24px 16px;
-    border-bottom: 1px solid var(--color-border);
-}
-
 .sidebar-header h1 {
     font-weight: 700;
     color: var(--color-text-bright);
@@ -97,12 +93,6 @@ a:hover {
     transition: background 0.15s, border-color 0.15s;
 }
 
-.btn-scan:hover {
-    background: rgba(28, 201, 233, 0.15);
-    border-color: rgba(28, 201, 233, 0.4);
-    color: var(--color-accent);
-}
-
 /* === Track List === */
 .track-list {
     flex: 1;
@@ -126,15 +116,15 @@ a:hover {
 .track {
     position: relative;
     padding: 14px 24px;
-    padding-right: 48px;
+    padding-right: 80px;
     border-bottom: 1px solid var(--color-border);
     transition: background 0.12s;
 }
 
-.track-toggle {
+.track-toggle,
+.track-open {
     position: absolute;
     top: 12px;
-    right: 16px;
     width: 28px;
     height: 28px;
     display: flex;
@@ -150,10 +140,26 @@ a:hover {
     line-height: 1;
 }
 
-.track-toggle:hover {
+.track-toggle {
+    right: 48px;
+}
+
+.track-open {
+    right: 16px;
+    font-size: 12px;
+}
+
+.track-toggle:hover,
+.track-open:hover {
     color: var(--color-accent);
     border-color: var(--color-accent);
     background: rgba(28, 201, 233, 0.08);
+}
+
+.track.active .track-open {
+    color: var(--color-bg);
+    background: var(--color-accent);
+    border-color: var(--color-accent);
 }
 
 .track.expanded .track-toggle {
@@ -161,8 +167,10 @@ a:hover {
     transform: rotate(90deg);
 }
 
-.track:hover {
-    background: var(--color-surface-alt);
+.track.active {
+    background: var(--color-surface-alt-light);
+    border-left: 3px solid var(--color-accent);
+    padding-left: 21px;
 }
 
 .track-title {
@@ -223,7 +231,7 @@ a:hover {
 }
 
 /* === Expanded Track === */
-.track.expanded {
+.track.expanded:not(.active) {
     background: var(--color-surface-alt);
 }
 
@@ -253,6 +261,7 @@ a:hover {
     align-items: center;
     justify-content: center;
     background: var(--color-bg);
+    overflow-y: auto;
 }
 
 .main-panel-placeholder {
@@ -264,6 +273,106 @@ a:hover {
     font-size: 48px;
     margin-bottom: 16px;
     opacity: 0.3;
+}
+
+/* === Main Panel Detail === */
+.main-panel-detail {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    padding: 32px;
+    gap: 20px;
+}
+
+.detail-header {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 16px;
+}
+
+.detail-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-yellow);
+    margin-bottom: 4px;
+    line-height: 1.3;
+}
+
+.detail-id {
+    font-size: 0.85rem;
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    color: var(--color-text-dim);
+}
+
+.detail-player {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.detail-audio {
+    width: 100%;
+    height: 40px;
+    border-radius: 6px;
+    outline: none;
+}
+
+.detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.detail-meta .tag {
+    display: inline-block;
+    padding: 4px 10px;
+    font-weight: 500;
+    border-radius: 4px;
+    background: var(--color-dark-blue);
+    color: var(--color-accent);
+    font-size: 0.85rem;
+}
+
+.detail-caption {
+    color: var(--color-text-dim);
+    line-height: 1.5;
+}
+
+.detail-lyrics-section h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-bright);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+.detail-lyrics {
+    color: var(--color-text-dim);
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.detail-lyrics::-webkit-scrollbar {
+    width: 6px;
+}
+
+.detail-lyrics::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.detail-lyrics::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
 }
 
 /* === Empty State === */
