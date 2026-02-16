@@ -10,38 +10,21 @@
         <p>No tracks found. <a href="{{ url_for('main.update') }}">Scan music directory</a></p>
     {% else %}
         <p>{{ tracks | length }} tracks. <a href="{{ url_for('main.update') }}">Rescan</a></p>
-        <table border="1" cellpadding="4">
-            <tr>
-                <th>ID</th>
-                <th>Path</th>
-                <th>Title</th>
-                <th>Caption</th>
-                <th>Lyrics</th>
-                <th>Instrumental</th>
-                <th>BPM</th>
-                <th>Key/Scale</th>
-                <th>Time Sig</th>
-                <th>Duration</th>
-                <th>Seed</th>
-                <th>Negative Prompt</th>
-            </tr>
-            {% for track in tracks %}
-                <tr>
-                    <td>{{ track.id }}</td>
-                    <td>{{ track.path or "" }}</td>
-                    <td>{{ track.title_raw or "" }}</td>
-                    <td>{{ track.caption or "" }}</td>
-                    <td>{{ track.lyrics or "" }}</td>
-                    <td>{{ "Yes" if track.instrumental else "No" }}</td>
-                    <td>{{ track.bpm or "" }}</td>
-                    <td>{{ track.keyscale or "" }}</td>
-                    <td>{{ track.timesignature or "" }}</td>
-                    <td>{{ track.duration or "" }}</td>
-                    <td>{{ track.seed or "" }}</td>
-                    <td>{{ track.lm_negative_prompt or "" }}</td>
-                </tr>
-            {% endfor %}
-        </table>
+        {% for track in tracks %}
+        <div class="track">
+            <h2 class="{{ 'title_raw' if track.title_raw else 'title_path' }}">{{ track.title_raw or track.path }}</h2>
+            <p class="id">{{ track.id }}</p>
+            <p class="caption">{{ track.caption or "" }}{% if track.lm_negative_prompt and track.lm_negative_prompt != "NO USER INPUT" %} ({{ track.lm_negative_prompt }}){% endif %}</p>
+            <p class="metadata">
+                {% if track.bpm %}<span>BPM: {{ track.bpm }}</span>{% endif %}
+                {% if track.keyscale %}<span>Key: {{ track.keyscale }}</span>{% endif %}
+                {% if track.timesignature %}<span>Time: {{ track.timesignature }}</span>{% endif %}
+                {% if track.duration %}<span>Duration: {{ track.duration }}s</span>{% endif %}
+                {% if track.seed %}<span>Seed: {{ track.seed }}</span>{% endif %}
+            </p>
+            <p class="lyrics">{{ track.lyrics or "" }}</p>
+        </div>
+        {% endfor %}
     {% endif %}
 </body>
 </html>
