@@ -1,7 +1,7 @@
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "traxbase.db"
+DB_PATH = Path(__file__).resolve().parent.parent / "traxbase.db"
 
 
 def get_db():

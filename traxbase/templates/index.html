@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Traxbase</title>
+</head>
+<body>
+    <h1>Traxbase</h1>
+    {% if not tracks %}
+        <p>No tracks found. <a href="{{ url_for('main.update') }}">Scan music directory</a></p>
+    {% else %}
+        <p>{{ tracks | length }} tracks. <a href="{{ url_for('main.update') }}">Rescan</a></p>
+        <table border="1" cellpadding="4">
+            <tr><th>Filename</th><th>Caption</th></tr>
+            {% for track in tracks %}
+                <tr>
+                    <td>{{ track.id }}</td>
+                    <td>{{ track.caption or "" }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</body>
+</html>

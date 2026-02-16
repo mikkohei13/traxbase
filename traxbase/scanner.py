@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-MUSIC_DIR = Path(__file__).parent / "music"
+MUSIC_DIR = Path(__file__).resolve().parent.parent / "music"
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".flac"}
 
 
