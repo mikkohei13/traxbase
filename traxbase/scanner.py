@@ -1,6 +1,10 @@
 import json
+import os
 import re
+from datetime import datetime, timezone
 from pathlib import Path
+
+import mutagen
 
 MUSIC_DIR = Path(__file__).resolve().parent.parent / "music"
 AUDIO_EXTENSIONS = {".mp3", ".wav", ".flac"}
@@ -20,6 +24,17 @@ def parse_title_raw(lyrics):
     m = _TITLE_RE.match(first_line)
     if m:
         return m.group(1).strip()
+    return None
+
+
+def get_audio_duration(filepath):
+    """Return the duration of an audio file in seconds (rounded), or None."""
+    try:
+        audio = mutagen.File(filepath)
+        if audio is not None and audio.info is not None:
+            return round(audio.info.length)
+    except Exception:
+        pass
     return None
 
 
@@ -85,6 +100,14 @@ def scan_music_dir():
             if title_raw is not None:
                 title_raw = title_raw[:256]
 
+            duration_output = get_audio_duration(filepath)
+
+            try:
+                mtime = os.path.getmtime(filepath)
+                file_modified = datetime.fromtimestamp(mtime, tz=timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+            except OSError:
+                file_modified = None
+
             found.append({
                 "id": track_id,
                 "path": str(filepath.relative_to(MUSIC_DIR)),
@@ -96,6 +119,8 @@ def scan_music_dir():
                 "keyscale": keyscale,
                 "timesignature": timesignature,
                 "duration": duration,
+                "duration_output": duration_output,
+                "file_modified": file_modified,
                 "seed": seed,
                 "lm_negative_prompt": lm_negative_prompt,
             })

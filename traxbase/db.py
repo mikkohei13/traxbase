@@ -26,6 +26,8 @@ def rebuild_tracks(tracks):
             keyscale TEXT,
             timesignature TEXT,
             duration INTEGER,
+            duration_output INTEGER,
+            file_modified TEXT,
             seed INTEGER,
             lm_negative_prompt TEXT
         )
@@ -33,14 +35,17 @@ def rebuild_tracks(tracks):
     db.executemany(
         """INSERT INTO tracks
            (id, path, caption, lyrics, title_raw, instrumental, bpm,
-            keyscale, timesignature, duration, seed, lm_negative_prompt)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            keyscale, timesignature, duration, duration_output,
+            file_modified, seed, lm_negative_prompt)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         [
             (
                 t["id"], t["path"], t["caption"], t["lyrics"],
                 t["title_raw"], int(t["instrumental"]),
                 t["bpm"], t["keyscale"], t["timesignature"],
-                t["duration"], t["seed"], t["lm_negative_prompt"],
+                t["duration"], t["duration_output"],
+                t["file_modified"], t["seed"],
+                t["lm_negative_prompt"],
             )
             for t in tracks
         ],
@@ -55,9 +60,10 @@ def get_all_tracks():
     try:
         rows = db.execute(
             """SELECT id, path, caption, lyrics, title_raw, instrumental,
-                      bpm, keyscale, timesignature, duration, seed,
-                      lm_negative_prompt
-               FROM tracks"""
+                      bpm, keyscale, timesignature, duration, duration_output,
+                      file_modified, seed, lm_negative_prompt
+               FROM tracks
+               ORDER BY file_modified DESC"""
         ).fetchall()
     except sqlite3.OperationalError:
         return []

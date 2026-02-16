@@ -31,6 +31,8 @@
                      data-keyscale="{{ track.keyscale or '' }}"
                      data-timesignature="{{ track.timesignature or '' }}"
                      data-duration="{{ track.duration or '' }}"
+                     data-duration-output="{{ track.duration_output or '' }}"
+                     data-file-modified="{{ track.file_modified or '' }}"
                      data-lyrics="{{ track.lyrics|e if track.lyrics else '' }}"
                      data-lm-negative-prompt="{{ track.lm_negative_prompt or '' }}">
                     <button class="track-toggle" aria-label="Expand track">▸</button>
@@ -40,12 +42,14 @@
                     {% if track.caption %}
                     <div class="track-caption">{{ track.caption }}{% if track.lm_negative_prompt and track.lm_negative_prompt != "NO USER INPUT" %} <span style="color: var(--color-pink);">({{ track.lm_negative_prompt }})</span>{% endif %}</div>
                     {% endif %}
-                    {% if track.bpm or track.keyscale or track.timesignature or track.duration %}
+                    {% if track.bpm or track.keyscale or track.timesignature or track.duration or track.duration_output or track.file_modified %}
                     <div class="track-meta">
                         {% if track.bpm %}<span class="tag">BPM: {{ track.bpm }}</span>{% endif %}
                         {% if track.keyscale %}<span class="tag">Key: {{ track.keyscale }}</span>{% endif %}
                         {% if track.timesignature %}<span class="tag">TS: {{ track.timesignature }}</span>{% endif %}
                         {% if track.duration %}<span class="tag">Dur: {{ track.duration }}</span>{% endif %}
+                        {% if track.duration_output %}<span class="tag">Dur (out): {{ track.duration_output }}</span>{% endif %}
+                        {% if track.file_modified %}<span class="tag">{{ track.file_modified }}</span>{% endif %}
                     </div>
                     {% endif %}
                     {% if track.lyrics %}
@@ -98,6 +102,8 @@ document.querySelector('.track-list')?.addEventListener('click', function(e) {
     const keyscale = track.dataset.keyscale;
     const timesignature = track.dataset.timesignature;
     const duration = track.dataset.duration;
+    const durationOutput = track.dataset.durationOutput;
+    const fileModified = track.dataset.fileModified;
     const lyrics = track.dataset.lyrics;
     const lmNeg = track.dataset.lmNegativePrompt;
 
@@ -117,6 +123,8 @@ document.querySelector('.track-list')?.addEventListener('click', function(e) {
     if (keyscale) metaTags.push('Key: ' + keyscale);
     if (timesignature) metaTags.push('TS: ' + timesignature);
     if (duration) metaTags.push('Duration: ' + duration + 's');
+    if (durationOutput) metaTags.push('Dur (out): ' + durationOutput + 's');
+    if (fileModified) metaTags.push(fileModified);
     const metaEl = detail.querySelector('.detail-meta');
     metaEl.innerHTML = metaTags.map(t => '<span class="tag">' + t + '</span>').join('');
     metaEl.style.display = metaTags.length ? 'flex' : 'none';
