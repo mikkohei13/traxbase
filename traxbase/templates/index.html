@@ -11,11 +11,34 @@
     {% else %}
         <p>{{ tracks | length }} tracks. <a href="{{ url_for('main.update') }}">Rescan</a></p>
         <table border="1" cellpadding="4">
-            <tr><th>Filename</th><th>Caption</th></tr>
+            <tr>
+                <th>ID</th>
+                <th>Path</th>
+                <th>Title</th>
+                <th>Caption</th>
+                <th>Lyrics</th>
+                <th>Instrumental</th>
+                <th>BPM</th>
+                <th>Key/Scale</th>
+                <th>Time Sig</th>
+                <th>Duration</th>
+                <th>Seed</th>
+                <th>Negative Prompt</th>
+            </tr>
             {% for track in tracks %}
                 <tr>
                     <td>{{ track.id }}</td>
+                    <td>{{ track.path or "" }}</td>
+                    <td>{{ track.title_raw or "" }}</td>
                     <td>{{ track.caption or "" }}</td>
+                    <td>{{ track.lyrics or "" }}</td>
+                    <td>{{ "Yes" if track.instrumental else "No" }}</td>
+                    <td>{{ track.bpm or "" }}</td>
+                    <td>{{ track.keyscale or "" }}</td>
+                    <td>{{ track.timesignature or "" }}</td>
+                    <td>{{ track.duration or "" }}</td>
+                    <td>{{ track.seed or "" }}</td>
+                    <td>{{ track.lm_negative_prompt or "" }}</td>
                 </tr>
             {% endfor %}
         </table>

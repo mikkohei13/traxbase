@@ -6,7 +6,7 @@ Music Track Database based on Flask, uv, and SQLite. Aims to help me to keep tra
 To run the app, use:
 
 ```bash
-uv run flask --app app run --reload
+uv run flask --app traxbase run --reload
 ```
 
 The app is available at http://127.0.0.1:5000
