@@ -1,0 +1,9 @@
+[project]
+name = "traxbase"
+version = "0.1.0"
+description = "Music Track Database"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "flask>=3.1.2",
+]
