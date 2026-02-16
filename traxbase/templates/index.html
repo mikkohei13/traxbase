@@ -3,28 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <title>Traxbase</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Traxbase</h1>
-    {% if not tracks %}
-        <p>No tracks found. <a href="{{ url_for('main.update') }}">Scan music directory</a></p>
-    {% else %}
-        <p>{{ tracks | length }} tracks. <a href="{{ url_for('main.update') }}">Rescan</a></p>
-        {% for track in tracks %}
-        <div class="track">
-            <h2 class="{{ 'title_raw' if track.title_raw else 'title_path' }}">{{ track.title_raw or track.path }}</h2>
-            <p class="id">{{ track.id }}</p>
-            <p class="caption">{{ track.caption or "" }}{% if track.lm_negative_prompt and track.lm_negative_prompt != "NO USER INPUT" %} ({{ track.lm_negative_prompt }}){% endif %}</p>
-            <p class="metadata">
-                {% if track.bpm %}<span>BPM: {{ track.bpm }}</span>{% endif %}
-                {% if track.keyscale %}<span>Key: {{ track.keyscale }}</span>{% endif %}
-                {% if track.timesignature %}<span>Time: {{ track.timesignature }}</span>{% endif %}
-                {% if track.duration %}<span>Duration: {{ track.duration }}s</span>{% endif %}
-                {% if track.seed %}<span>Seed: {{ track.seed }}</span>{% endif %}
-            </p>
-            <p class="lyrics">{{ track.lyrics or "" }}</p>
+    <div class="app">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>Traxbase</h1>
+            </div>
+
+            {% if not tracks %}
+            <div class="empty-state">
+                <p>No tracks found.</p>
+                <a class="btn-scan" href="{{ url_for('main.update') }}">Scan music directory</a>
+            </div>
+            {% else %}
+            <div class="sidebar-toolbar">
+                <span class="track-count">{{ tracks | length }} tracks</span>
+                <a class="btn-scan" href="{{ url_for('main.update') }}">Rescan</a>
+            </div>
+            <div class="track-list">
+                {% for track in tracks %}
+                <div class="track">
+                    <button class="track-toggle" aria-label="Expand track">▸</button>
+                    <div class="track-title {{ 'title_path' if not track.title_raw else '' }}">{{ track.title_raw or track.path }}</div>
+                    <div class="track-id">{{ track.id }}</div>
+                    {% if track.caption %}
+                    <div class="track-caption">{{ track.caption }}{% if track.lm_negative_prompt and track.lm_negative_prompt != "NO USER INPUT" %} <span style="color: var(--color-pink);">({{ track.lm_negative_prompt }})</span>{% endif %}</div>
+                    {% endif %}
+                    {% if track.bpm or track.keyscale or track.timesignature or track.duration %}
+                    <div class="track-meta">
+                        {% if track.bpm %}<span class="tag">BPM: {{ track.bpm }}</span>{% endif %}
+                        {% if track.keyscale %}<span class="tag">Key: {{ track.keyscale }}</span>{% endif %}
+                        {% if track.timesignature %}<span class="tag">TS: {{ track.timesignature }}</span>{% endif %}
+                        {% if track.duration %}<span class="tag">Dur: {{ track.duration }}</span>{% endif %}
+                    </div>
+                    {% endif %}
+                    {% if track.lyrics %}
+                    <div class="track-lyrics">{{ track.lyrics }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
-        {% endfor %}
-    {% endif %}
+
+        <div class="main-panel">
+            <div class="main-panel-placeholder">
+                <div class="icon">♫</div>
+                <p>Select a track to edit</p>
+            </div>
+        </div>
+    </div>
+<script>
+document.querySelector('.track-list')?.addEventListener('click', function(e) {
+    const btn = e.target.closest('.track-toggle');
+    if (!btn) return;
+    btn.closest('.track').classList.toggle('expanded');
+});
+</script>
 </body>
 </html>
