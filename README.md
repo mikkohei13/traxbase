@@ -18,6 +18,10 @@ The app is available at http://127.0.0.1:5000
 - **Frontend:** Server-rendered Jinja2 templates with minimal vanilla JS
 - **Dependencies:** Managed with uv (`pyproject.toml` / `uv.lock`)
 
+## Database
+
+The SQLite database (`traxbase.db`) is a derived cache — the filesystem (`./music`) is the source of truth. The `tracks` table is dropped and rebuilt from scratch on every scan (`/update`), so schema changes in code take effect immediately with no migrations needed.
+
 ## Upcoming features (keep these in mind but **don't develop unless asked**)
 
 - Web UI that shows a table of music tracks (mp3, wav, flac) from the ./music directory and subdirectories
