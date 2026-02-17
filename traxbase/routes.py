@@ -49,5 +49,6 @@ def track_userdata_post(track_id):
     description = (request.form.get("description") or "").strip()[:4096]
     starred = request.form.get("starred") == "1"
     suno = request.form.get("suno") == "1"
-    save_track_userdata(track_id, custom_title, description, starred, suno)
+    hide = request.form.get("hide") == "1"
+    save_track_userdata(track_id, custom_title, description, starred, suno, hide)
     return jsonify({"ok": True})

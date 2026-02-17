@@ -22,13 +22,14 @@
             </div>
             <div class="track-list">
                 {% for track in tracks %}
-                <div class="track"
+                <div class="track{{ ' track-hidden' if track.hide else '' }}"
                      data-path="{{ track.path }}"
                      data-title="{{ track.display_title }}"
                      data-id="{{ track.id }}">
                     <button class="track-toggle" aria-label="Expand track">▸</button>
                     <button class="track-open" aria-label="Open track" title="Open in player">▶</button>
                     <h4 class="track-title {{ 'title_path' if not track.custom_title and not track.title_raw else '' }}">{{ track.display_title }}{% if track.starred %} <span class="icon star">Starred</span>{% endif %}{% if track.suno %} <span class="icon">Suno</span>{% endif %}</h4>
+                    {% if not track.hide %}
                     <div class="track-id">{{ track.id }}</div>
                     {% if track.description %}
                     <div class="track-description">{{ track.description }}</div>
@@ -48,6 +49,7 @@
                     {% endif %}
                     {% if track.lyrics %}
                     <div class="track-lyrics">{{ track.lyrics }}</div>
+                    {% endif %}
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -77,6 +79,7 @@
                         <ul>
                             <li><label class="checkbox-label"><input type="checkbox" id="userdata-starred" name="starred" value="1"> Starred</label></li>
                             <li><label class="checkbox-label"><input type="checkbox" id="userdata-suno" name="suno" value="1"> Suno</label></li>
+                            <li><label class="checkbox-label"><input type="checkbox" id="userdata-hide" name="hide" value="1"> Hide</label></li>
                         </ul>
                     </div>
                     <div class="userdata-form-actions">
@@ -90,7 +93,7 @@
     </div>
 <script>
 let currentTrackId = null;
-let userdataInitial = { custom_title: '', description: '', starred: false, suno: false };
+let userdataInitial = { custom_title: '', description: '', starred: false, suno: false, hide: false };
 
 function hasUserdataChanges() {
     const form = document.querySelector('.userdata-form');
@@ -98,7 +101,8 @@ function hasUserdataChanges() {
     return form.querySelector('#userdata-custom-title').value !== userdataInitial.custom_title
         || form.querySelector('#userdata-description').value !== userdataInitial.description
         || form.querySelector('#userdata-starred').checked !== userdataInitial.starred
-        || form.querySelector('#userdata-suno').checked !== userdataInitial.suno;
+        || form.querySelector('#userdata-suno').checked !== userdataInitial.suno
+        || form.querySelector('#userdata-hide').checked !== userdataInitial.hide;
 }
 
 function updateUnsavedIndicator() {
@@ -156,6 +160,7 @@ document.querySelector('.track-list')?.addEventListener('click', function(e) {
     form.querySelector('#userdata-description').value = '';
     form.querySelector('#userdata-starred').checked = false;
     form.querySelector('#userdata-suno').checked = false;
+    form.querySelector('#userdata-hide').checked = false;
     form.querySelector('.userdata-status').textContent = '';
     form.querySelector('.userdata-unsaved').hidden = true;
 
@@ -167,11 +172,13 @@ document.querySelector('.track-list')?.addEventListener('click', function(e) {
             form.querySelector('#userdata-description').value = data.description || '';
             form.querySelector('#userdata-starred').checked = !!data.starred;
             form.querySelector('#userdata-suno').checked = !!data.suno;
+            form.querySelector('#userdata-hide').checked = !!data.hide;
             userdataInitial = {
                 custom_title: data.custom_title || '',
                 description: data.description || '',
                 starred: !!data.starred,
                 suno: !!data.suno,
+                hide: !!data.hide,
             };
         });
 });
@@ -195,6 +202,7 @@ document.querySelector('.userdata-form')?.addEventListener('submit', function(e)
                 description: this.querySelector('#userdata-description').value,
                 starred: this.querySelector('#userdata-starred').checked,
                 suno: this.querySelector('#userdata-suno').checked,
+                hide: this.querySelector('#userdata-hide').checked,
             };
             updateUnsavedIndicator();
             status.textContent = 'Saved';
