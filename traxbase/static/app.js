@@ -1,3 +1,37 @@
+/* === Track list filtering === */
+function applyFilters() {
+    const starred = document.getElementById('filter-starred')?.checked;
+    const title = (document.getElementById('filter-title')?.value || '').toLowerCase();
+    const desc = (document.getElementById('filter-desc')?.value || '').toLowerCase();
+
+    const tracks = document.querySelectorAll('.track-list .track');
+    let visible = 0;
+    tracks.forEach(t => {
+        let show = true;
+        if (starred && t.dataset.starred !== '1') show = false;
+        if (title && !t.dataset.title.toLowerCase().includes(title)) show = false;
+        if (desc) {
+            const inDesc = (t.dataset.description || '').toLowerCase().includes(desc);
+            const inCap = (t.dataset.caption || '').toLowerCase().includes(desc);
+            if (!inDesc && !inCap) show = false;
+        }
+        t.classList.toggle('filter-out', !show);
+        if (show) visible++;
+    });
+
+    const countEl = document.querySelector('.track-count');
+    if (countEl) {
+        const anyActive = starred || title || desc;
+        countEl.textContent = anyActive
+            ? visible + ' / ' + tracks.length + ' tracks'
+            : tracks.length + ' tracks';
+    }
+}
+
+document.getElementById('filter-starred')?.addEventListener('change', applyFilters);
+document.getElementById('filter-title')?.addEventListener('input', applyFilters);
+document.getElementById('filter-desc')?.addEventListener('input', applyFilters);
+
 let currentTrackId = null;
 let userdataInitial = { custom_title: '', description: '', starred: false, suno: false, hide: false };
 

@@ -15,12 +15,22 @@
                 <span class="track-count">{{ tracks | length }} tracks</span>
                 <a class="btn-scan" href="{{ url_for('main.update') }}">Rescan</a>
             </div>
+            <div class="sidebar-filters">
+                <label class="filter-checkbox">
+                    <input type="checkbox" id="filter-starred"> Starred only
+                </label>
+                <input type="text" id="filter-title" placeholder="Filter by title…">
+                <input type="text" id="filter-desc" placeholder="Filter by description / caption…">
+            </div>
             <div class="track-list">
                 {% for track in tracks %}
                 <div class="track{{ ' track-hidden' if track.hide else '' }}"
                      data-path="{{ track.path }}"
                      data-title="{{ track.display_title }}"
-                     data-id="{{ track.id }}">
+                     data-id="{{ track.id }}"
+                     data-starred="{{ '1' if track.starred else '0' }}"
+                     data-description="{{ track.description or '' }}"
+                     data-caption="{{ track.caption or '' }}">
                     <button class="track-toggle" aria-label="Expand track">▸</button>
                     <button class="track-open" aria-label="Open track" title="Open in player">▶</button>
                     <h4 class="track-title {{ 'title_path' if not track.custom_title and not track.title_raw else '' }}">{{ track.display_title }}{% if track.starred %} <span class="icon star">Starred</span>{% endif %}{% if track.suno %} <span class="icon">Suno</span>{% endif %}</h4>
