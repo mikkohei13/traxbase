@@ -38,6 +38,23 @@ def get_audio_duration(filepath):
     return None
 
 
+def _str_field(meta, key, maxlen):
+    """Read a string field from metadata, truncating to maxlen."""
+    val = meta.get(key)
+    return str(val)[:maxlen] if val is not None else None
+
+
+def _int_field(meta, key):
+    """Read an integer field from metadata, returning None on failure."""
+    val = meta.get(key)
+    if val is None:
+        return None
+    try:
+        return int(val)
+    except (ValueError, TypeError):
+        return None
+
+
 def scan_music_dir():
     """Scan the music directory for audio files and their JSON metadata."""
     found = []
@@ -55,52 +72,10 @@ def scan_music_dir():
                 except (json.JSONDecodeError, OSError):
                     pass
 
-            caption = meta.get("caption")
-            if caption is not None:
-                caption = str(caption)[:1024]
-
-            keyscale = meta.get("keyscale")
-            if keyscale is not None:
-                keyscale = str(keyscale)[:32]
-
-            timesignature = meta.get("timesignature")
-            if timesignature is not None:
-                timesignature = str(timesignature)[:32]
-
-            lm_negative_prompt = meta.get("lm_negative_prompt")
-            if lm_negative_prompt is not None:
-                lm_negative_prompt = str(lm_negative_prompt)[:512]
-
-            bpm = meta.get("bpm")
-            if bpm is not None:
-                try:
-                    bpm = int(bpm)
-                except (ValueError, TypeError):
-                    bpm = None
-
-            duration = meta.get("duration")
-            if duration is not None:
-                try:
-                    duration = int(duration)
-                except (ValueError, TypeError):
-                    duration = None
-
-            seed = meta.get("seed")
-            if seed is not None:
-                try:
-                    seed = int(seed)
-                except (ValueError, TypeError):
-                    seed = None
-
-            lyrics = meta.get("lyrics")
-            if lyrics is not None:
-                lyrics = str(lyrics)[:4096]
-
+            lyrics = _str_field(meta, "lyrics", 4096)
             title_raw = parse_title_raw(lyrics)
             if title_raw is not None:
                 title_raw = title_raw[:256]
-
-            duration_output = get_audio_duration(filepath)
 
             try:
                 mtime = os.path.getmtime(filepath)
@@ -111,18 +86,18 @@ def scan_music_dir():
             found.append({
                 "id": track_id,
                 "path": str(filepath.relative_to(MUSIC_DIR)),
-                "caption": caption,
+                "caption": _str_field(meta, "caption", 1024),
                 "lyrics": lyrics,
                 "title_raw": title_raw,
                 "instrumental": bool(meta.get("instrumental", False)),
-                "bpm": bpm,
-                "keyscale": keyscale,
-                "timesignature": timesignature,
-                "duration": duration,
-                "duration_output": duration_output,
+                "bpm": _int_field(meta, "bpm"),
+                "keyscale": _str_field(meta, "keyscale", 32),
+                "timesignature": _str_field(meta, "timesignature", 32),
+                "duration": _int_field(meta, "duration"),
+                "duration_output": get_audio_duration(filepath),
                 "file_modified": file_modified,
-                "seed": seed,
-                "lm_negative_prompt": lm_negative_prompt,
+                "seed": _int_field(meta, "seed"),
+                "lm_negative_prompt": _str_field(meta, "lm_negative_prompt", 512),
             })
     found.sort(key=lambda t: t["id"])
     return found

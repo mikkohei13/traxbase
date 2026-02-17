@@ -1,11 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Traxbase – Scan Complete</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Traxbase – Scan Complete{% endblock %}
+
+{% block body %}
     <div class="update-result">
         <h1>Traxbase</h1>
 
@@ -40,5 +37,4 @@
 
         <a class="btn-scan" href="{{ url_for('main.index') }}">Back to library</a>
     </div>
-</body>
-</html>
+{% endblock %}
