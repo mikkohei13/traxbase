@@ -22,11 +22,19 @@
     --color-dark-blue:   #0D1650;
 }
 
-h1, .icon {
+h1 {
     background: linear-gradient(to right, var(--color-pink), var(--color-yellow), var(--color-accent));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+.icon {
+    color: var(--color-pink);
+}
+
+.track-title .icon {
+    margin-left: 1rem;
 }
 
 html, body {
@@ -440,6 +448,11 @@ a:hover {
     opacity: 0.85;
 }
 
+.userdata-unsaved {
+    font-size: 0.85rem;
+    color: var(--color-pink);
+}
+
 .userdata-status {
     font-size: 0.85rem;
 }
@@ -530,4 +543,14 @@ a:hover {
     font-family: "SF Mono", "Fira Code", "Consolas", monospace;
     font-size: 0.85rem;
     color: var(--color-text-dim);
+}
+
+.userdata-checkboxes ul {
+    list-style: none;
+    padding-left: 4px;
+    margin: 0;
+}
+
+.userdata-checkboxes li {
+    margin: 4px 0;
 }

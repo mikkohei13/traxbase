@@ -23,9 +23,17 @@ def ensure_userdata_schema():
         CREATE TABLE IF NOT EXISTS track_userdata (
             track_id TEXT PRIMARY KEY,
             custom_title TEXT,
-            description TEXT
+            description TEXT,
+            starred INTEGER NOT NULL DEFAULT 0,
+            suno INTEGER NOT NULL DEFAULT 0
         )
     """)
+    # Add columns if upgrading from an older schema
+    for col in ("starred", "suno"):
+        try:
+            db.execute(f"ALTER TABLE track_userdata ADD COLUMN {col} INTEGER NOT NULL DEFAULT 0")
+        except sqlite3.OperationalError:
+            pass  # column already exists
     db.commit()
     db.close()
 
@@ -104,7 +112,7 @@ def get_all_tracks():
     userdata_db = get_userdata_db()
     try:
         ud_rows = userdata_db.execute(
-            "SELECT track_id, custom_title, description FROM track_userdata"
+            "SELECT track_id, custom_title, description, starred, suno FROM track_userdata"
         ).fetchall()
     except sqlite3.OperationalError:
         ud_rows = []
@@ -116,6 +124,8 @@ def get_all_tracks():
         ud = ud_map.get(track["id"], {})
         track["custom_title"] = ud.get("custom_title") or ""
         track["description"] = ud.get("description") or ""
+        track["starred"] = bool(ud.get("starred"))
+        track["suno"] = bool(ud.get("suno"))
         track["display_title"] = track["custom_title"] or track["title_raw"] or track["path"]
 
     return tracks
@@ -126,7 +136,7 @@ def get_track_userdata(track_id):
     db = get_userdata_db()
     try:
         row = db.execute(
-            "SELECT custom_title, description FROM track_userdata WHERE track_id = ?",
+            "SELECT custom_title, description, starred, suno FROM track_userdata WHERE track_id = ?",
             (track_id,),
         ).fetchone()
     except sqlite3.OperationalError:
@@ -134,20 +144,27 @@ def get_track_userdata(track_id):
     finally:
         db.close()
     if row:
-        return {"custom_title": row["custom_title"] or "", "description": row["description"] or ""}
-    return {"custom_title": "", "description": ""}
+        return {
+            "custom_title": row["custom_title"] or "",
+            "description": row["description"] or "",
+            "starred": bool(row["starred"]),
+            "suno": bool(row["suno"]),
+        }
+    return {"custom_title": "", "description": "", "starred": False, "suno": False}
 
 
-def save_track_userdata(track_id, custom_title, description):
+def save_track_userdata(track_id, custom_title, description, starred, suno):
     """Insert or update userdata for a track."""
     db = get_userdata_db()
     db.execute(
-        """INSERT INTO track_userdata (track_id, custom_title, description)
-           VALUES (?, ?, ?)
+        """INSERT INTO track_userdata (track_id, custom_title, description, starred, suno)
+           VALUES (?, ?, ?, ?, ?)
            ON CONFLICT(track_id) DO UPDATE SET
                custom_title = excluded.custom_title,
-               description = excluded.description""",
-        (track_id, custom_title, description),
+               description = excluded.description,
+               starred = excluded.starred,
+               suno = excluded.suno""",
+        (track_id, custom_title, description, int(starred), int(suno)),
     )
     db.commit()
     db.close()
