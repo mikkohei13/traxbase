@@ -2,12 +2,32 @@ import sqlite3
 from pathlib import Path
 
 DB_PATH = Path(__file__).resolve().parent.parent / "traxbase.db"
+USERDATA_DB_PATH = Path(__file__).resolve().parent.parent / "userdata.db"
 
 
 def get_db():
     db = sqlite3.connect(DB_PATH)
     db.row_factory = sqlite3.Row
     return db
+
+
+def get_userdata_db():
+    db = sqlite3.connect(USERDATA_DB_PATH)
+    db.row_factory = sqlite3.Row
+    return db
+
+
+def ensure_userdata_schema():
+    db = get_userdata_db()
+    db.execute("""
+        CREATE TABLE IF NOT EXISTS track_userdata (
+            track_id TEXT PRIMARY KEY,
+            custom_title TEXT,
+            description TEXT
+        )
+    """)
+    db.commit()
+    db.close()
 
 
 def rebuild_tracks(tracks):
@@ -65,7 +85,7 @@ def rebuild_tracks(tracks):
 
 
 def get_all_tracks():
-    """Return all tracks from the database."""
+    """Return all tracks from the database, with userdata joined in."""
     db = get_db()
     try:
         rows = db.execute(
@@ -79,4 +99,55 @@ def get_all_tracks():
         return []
     finally:
         db.close()
-    return [dict(row) for row in rows]
+    tracks = [dict(row) for row in rows]
+
+    userdata_db = get_userdata_db()
+    try:
+        ud_rows = userdata_db.execute(
+            "SELECT track_id, custom_title, description FROM track_userdata"
+        ).fetchall()
+    except sqlite3.OperationalError:
+        ud_rows = []
+    finally:
+        userdata_db.close()
+    ud_map = {row["track_id"]: dict(row) for row in ud_rows}
+
+    for track in tracks:
+        ud = ud_map.get(track["id"], {})
+        track["custom_title"] = ud.get("custom_title") or ""
+        track["description"] = ud.get("description") or ""
+        track["display_title"] = track["custom_title"] or track["title_raw"] or track["path"]
+
+    return tracks
+
+
+def get_track_userdata(track_id):
+    """Return userdata for a single track, or empty defaults."""
+    db = get_userdata_db()
+    try:
+        row = db.execute(
+            "SELECT custom_title, description FROM track_userdata WHERE track_id = ?",
+            (track_id,),
+        ).fetchone()
+    except sqlite3.OperationalError:
+        row = None
+    finally:
+        db.close()
+    if row:
+        return {"custom_title": row["custom_title"] or "", "description": row["description"] or ""}
+    return {"custom_title": "", "description": ""}
+
+
+def save_track_userdata(track_id, custom_title, description):
+    """Insert or update userdata for a track."""
+    db = get_userdata_db()
+    db.execute(
+        """INSERT INTO track_userdata (track_id, custom_title, description)
+           VALUES (?, ?, ?)
+           ON CONFLICT(track_id) DO UPDATE SET
+               custom_title = excluded.custom_title,
+               description = excluded.description""",
+        (track_id, custom_title, description),
+    )
+    db.commit()
+    db.close()

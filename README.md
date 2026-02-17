@@ -24,12 +24,9 @@ The SQLite database (`traxbase.db`) is a derived cache — the filesystem (`./mu
 
 ## Upcoming features (keep these in mind but **don't develop unless asked**)
 
-- Web UI that shows a table of music tracks (mp3, wav, flac) from the ./music directory and subdirectories
-- Shows metadata read from JSON files associated with each music file
 - Allows user to save more data about each track, e.g. title, genre keywords, longer notes
-- Shows a player UI to play the tracks
 - Shows distinct icon for each track
-- Allows quick filtering of the tracks
+- Allows quick sorting and filtering of the tracks
 
 ## Development principles
 

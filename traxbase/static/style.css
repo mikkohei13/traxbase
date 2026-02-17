@@ -88,7 +88,6 @@ a:hover {
     background: rgba(28, 201, 233, 0.08);
     border: 1px solid rgba(28, 201, 233, 0.2);
     border-radius: 6px;
-    cursor: pointer;
     text-decoration: none;
     transition: background 0.15s, border-color 0.15s;
 }
@@ -135,7 +134,6 @@ a:hover {
     border-radius: 6px;
     color: var(--color-text-dim);
     font-size: 14px;
-    cursor: pointer;
     transition: color 0.15s, border-color 0.15s, background 0.15s;
     line-height: 1;
 }
@@ -373,6 +371,79 @@ a:hover {
 .detail-lyrics::-webkit-scrollbar-thumb {
     background: var(--color-border);
     border-radius: 3px;
+}
+
+/* === Userdata Form === */
+.userdata-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.userdata-form label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.userdata-form input[type="text"],
+.userdata-form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--color-text);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.userdata-form input[type="text"]:focus,
+.userdata-form textarea:focus {
+    border-color: var(--color-accent);
+}
+
+.userdata-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.userdata-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.btn-save {
+    padding: 6px 18px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-bg);
+    background: var(--color-accent);
+    border: none;
+    border-radius: 6px;
+    transition: opacity 0.15s;
+}
+
+.btn-save:hover {
+    opacity: 0.85;
+}
+
+.userdata-status {
+    font-size: 0.85rem;
+}
+
+.userdata-status.success {
+    color: var(--color-accent);
+}
+
+.userdata-status.error {
+    color: var(--color-pink);
 }
 
 /* === Empty State === */

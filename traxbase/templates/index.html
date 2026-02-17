@@ -24,11 +24,11 @@
                 {% for track in tracks %}
                 <div class="track"
                      data-path="{{ track.path }}"
-                     data-title="{{ track.title_raw or track.path }}"
+                     data-title="{{ track.display_title }}"
                      data-id="{{ track.id }}">
                     <button class="track-toggle" aria-label="Expand track">▸</button>
                     <button class="track-open" aria-label="Open track" title="Open in player">▶</button>
-                    <div class="track-title {{ 'title_path' if not track.title_raw else '' }}">{{ track.title_raw or track.path }}</div>
+                    <div class="track-title {{ 'title_path' if not track.custom_title and not track.title_raw else '' }}">{{ track.display_title }}</div>
                     <div class="track-id">{{ track.id }}</div>
                     {% if track.caption %}
                     <div class="track-caption">{{ track.caption }}{% if track.lm_negative_prompt and track.lm_negative_prompt != "NO USER INPUT" %} <span style="color: var(--color-pink);">({{ track.lm_negative_prompt }})</span>{% endif %}</div>
@@ -65,10 +65,22 @@
                 <div class="detail-player">
                     <audio class="detail-audio" controls preload="metadata"></audio>
                 </div>
+                <form class="userdata-form" autocomplete="off">
+                    <label for="userdata-custom-title">Custom title</label>
+                    <input type="text" id="userdata-custom-title" name="custom_title" maxlength="256" placeholder="Give this track a name…">
+                    <label for="userdata-description">Description</label>
+                    <textarea id="userdata-description" name="description" maxlength="4096" rows="4" placeholder="Notes, genre, mood…"></textarea>
+                    <div class="userdata-form-actions">
+                        <button type="submit" class="btn-save">Save</button>
+                        <span class="userdata-status"></span>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 <script>
+let currentTrackId = null;
+
 document.querySelector('.track-list')?.addEventListener('click', function(e) {
     const toggleBtn = e.target.closest('.track-toggle');
     if (toggleBtn) {
@@ -83,6 +95,7 @@ document.querySelector('.track-list')?.addEventListener('click', function(e) {
     const path = track.dataset.path;
     const title = track.dataset.title;
     const id = track.dataset.id;
+    currentTrackId = id;
 
     document.querySelector('.main-panel-placeholder').style.display = 'none';
     const detail = document.querySelector('.main-panel-detail');
@@ -97,6 +110,45 @@ document.querySelector('.track-list')?.addEventListener('click', function(e) {
 
     document.querySelectorAll('.track').forEach(t => t.classList.remove('active'));
     track.classList.add('active');
+
+    // Load existing userdata for this track
+    const form = detail.querySelector('.userdata-form');
+    form.querySelector('#userdata-custom-title').value = '';
+    form.querySelector('#userdata-description').value = '';
+    form.querySelector('.userdata-status').textContent = '';
+
+    fetch('/track/' + encodeURIComponent(id) + '/userdata')
+        .then(r => r.json())
+        .then(data => {
+            if (currentTrackId !== id) return;
+            form.querySelector('#userdata-custom-title').value = data.custom_title || '';
+            form.querySelector('#userdata-description').value = data.description || '';
+        });
+});
+
+document.querySelector('.userdata-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!currentTrackId) return;
+
+    const status = this.querySelector('.userdata-status');
+    const formData = new FormData(this);
+
+    fetch('/track/' + encodeURIComponent(currentTrackId) + '/userdata', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            status.textContent = 'Saved';
+            status.className = 'userdata-status success';
+            setTimeout(() => { status.textContent = ''; }, 2000);
+        }
+    })
+    .catch(() => {
+        status.textContent = 'Error saving';
+        status.className = 'userdata-status error';
+    });
 });
 </script>
 </body>
