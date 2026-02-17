@@ -390,3 +390,67 @@ a:hover {
 .empty-state .btn-scan {
     padding: 8px 20px;
 }
+
+/* === Update Result Page === */
+.update-result {
+    max-width: 720px;
+    margin: 80px auto;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.update-result h1 {
+    font-weight: 700;
+    color: var(--color-text-bright);
+    letter-spacing: -0.02em;
+}
+
+.update-message {
+    width: 100%;
+    padding: 20px 24px;
+    border-radius: 8px;
+    line-height: 1.6;
+}
+
+.update-success {
+    background: rgba(28, 201, 233, 0.08);
+    border: 1px solid rgba(28, 201, 233, 0.25);
+    color: var(--color-accent);
+}
+
+.update-warning {
+    background: rgba(227, 78, 207, 0.08);
+    border: 1px solid rgba(227, 78, 207, 0.25);
+    color: var(--color-text);
+}
+
+.skipped-table {
+    width: 100%;
+    margin-top: 12px;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.skipped-table th,
+.skipped-table td {
+    text-align: left;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.skipped-table th {
+    color: var(--color-text-dim);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.skipped-table .mono {
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    font-size: 0.85rem;
+    color: var(--color-text-dim);
+}

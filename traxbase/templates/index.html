@@ -25,16 +25,7 @@
                 <div class="track"
                      data-path="{{ track.path }}"
                      data-title="{{ track.title_raw or track.path }}"
-                     data-id="{{ track.id }}"
-                     data-caption="{{ track.caption or '' }}"
-                     data-bpm="{{ track.bpm or '' }}"
-                     data-keyscale="{{ track.keyscale or '' }}"
-                     data-timesignature="{{ track.timesignature or '' }}"
-                     data-duration="{{ track.duration or '' }}"
-                     data-duration-output="{{ track.duration_output or '' }}"
-                     data-file-modified="{{ track.file_modified or '' }}"
-                     data-lyrics="{{ track.lyrics|e if track.lyrics else '' }}"
-                     data-lm-negative-prompt="{{ track.lm_negative_prompt or '' }}">
+                     data-id="{{ track.id }}">
                     <button class="track-toggle" aria-label="Expand track">▸</button>
                     <button class="track-open" aria-label="Open track" title="Open in player">▶</button>
                     <div class="track-title {{ 'title_path' if not track.title_raw else '' }}">{{ track.title_raw or track.path }}</div>
@@ -74,11 +65,6 @@
                 <div class="detail-player">
                     <audio class="detail-audio" controls preload="metadata"></audio>
                 </div>
-                <div class="detail-meta"></div>
-                <div class="detail-caption"></div>
-                <div class="detail-lyrics-section" style="display:none;">
-                    <pre class="detail-lyrics"></pre>
-                </div>
             </div>
         </div>
     </div>
@@ -97,15 +83,6 @@ document.querySelector('.track-list')?.addEventListener('click', function(e) {
     const path = track.dataset.path;
     const title = track.dataset.title;
     const id = track.dataset.id;
-    const caption = track.dataset.caption;
-    const bpm = track.dataset.bpm;
-    const keyscale = track.dataset.keyscale;
-    const timesignature = track.dataset.timesignature;
-    const duration = track.dataset.duration;
-    const durationOutput = track.dataset.durationOutput;
-    const fileModified = track.dataset.fileModified;
-    const lyrics = track.dataset.lyrics;
-    const lmNeg = track.dataset.lmNegativePrompt;
 
     document.querySelector('.main-panel-placeholder').style.display = 'none';
     const detail = document.querySelector('.main-panel-detail');
@@ -117,34 +94,6 @@ document.querySelector('.track-list')?.addEventListener('click', function(e) {
     const audio = detail.querySelector('.detail-audio');
     audio.src = '/audio/' + encodeURI(path);
     audio.load();
-
-    const metaTags = [];
-    if (bpm) metaTags.push('BPM: ' + bpm);
-    if (keyscale) metaTags.push('Key: ' + keyscale);
-    if (timesignature) metaTags.push('TS: ' + timesignature);
-    if (duration) metaTags.push('Duration: ' + duration + 's');
-    if (durationOutput) metaTags.push('Dur (out): ' + durationOutput + 's');
-    if (fileModified) metaTags.push(fileModified);
-    const metaEl = detail.querySelector('.detail-meta');
-    metaEl.innerHTML = metaTags.map(t => '<span class="tag">' + t + '</span>').join('');
-    metaEl.style.display = metaTags.length ? 'flex' : 'none';
-
-    const captionEl = detail.querySelector('.detail-caption');
-    let captionText = caption || '';
-    if (lmNeg && lmNeg !== 'NO USER INPUT') {
-        captionText += ' <span style="color:var(--color-pink);">(' + lmNeg + ')</span>';
-    }
-    captionEl.innerHTML = captionText;
-    captionEl.style.display = captionText ? 'block' : 'none';
-
-    const lyricsSection = detail.querySelector('.detail-lyrics-section');
-    const lyricsEl = detail.querySelector('.detail-lyrics');
-    if (lyrics) {
-        lyricsEl.textContent = lyrics;
-        lyricsSection.style.display = 'block';
-    } else {
-        lyricsSection.style.display = 'none';
-    }
 
     document.querySelectorAll('.track').forEach(t => t.classList.remove('active'));
     track.classList.add('active');

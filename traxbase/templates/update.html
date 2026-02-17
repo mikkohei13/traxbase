@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Traxbase – Scan Complete</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="update-result">
+        <h1>Traxbase</h1>
+
+        {% if skipped %}
+        <div class="update-message update-warning">
+            <p>Imported <strong>{{ imported_count }}</strong> track{{ "s" if imported_count != 1 else "" }}.</p>
+            <p>Skipped <strong>{{ skipped|length }}</strong> file{{ "s" if skipped|length != 1 else "" }}:</p>
+            <table class="skipped-table">
+                <thead>
+                    <tr>
+                        <th>Path</th>
+                        <th>ID</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in skipped %}
+                    <tr>
+                        <td>{{ item.path }}</td>
+                        <td class="mono">{{ item.id }}</td>
+                        <td>{{ item.reason }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="update-message update-success">
+            <p>Successfully imported <strong>{{ imported_count }}</strong> track{{ "s" if imported_count != 1 else "" }}.</p>
+        </div>
+        {% endif %}
+
+        <a class="btn-scan" href="{{ url_for('main.index') }}">Back to library</a>
+    </div>
+</body>
+</html>

@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, render_template, send_from_directory, url_for
+from flask import Blueprint, render_template, send_from_directory
 
 from traxbase.db import get_all_tracks, rebuild_tracks
 from traxbase.scanner import MUSIC_DIR, scan_music_dir
@@ -15,8 +15,13 @@ def index():
 @main.route("/update")
 def update():
     tracks = scan_music_dir()
-    rebuild_tracks(tracks)
-    return redirect(url_for("main.index"))
+    skipped = rebuild_tracks(tracks)
+    imported_count = len(tracks) - len(skipped)
+    return render_template(
+        "update.html",
+        imported_count=imported_count,
+        skipped=skipped,
+    )
 
 
 @main.route("/audio/<path:filepath>")

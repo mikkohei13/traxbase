@@ -11,7 +11,13 @@ def get_db():
 
 
 def rebuild_tracks(tracks):
-    """Drop and recreate the tracks table, then insert all scanned tracks."""
+    """Drop and recreate the tracks table, then insert all scanned tracks.
+
+    Returns a list of dicts describing skipped tracks, e.g.
+    ``[{"id": "abc", "path": "Artist/abc.mp3", "reason": "duplicate id"}]``.
+    An empty list means every track was inserted successfully.
+    """
+    skipped = []
     db = get_db()
     db.execute("DROP TABLE IF EXISTS tracks")
     db.execute("""
@@ -32,26 +38,30 @@ def rebuild_tracks(tracks):
             lm_negative_prompt TEXT
         )
     """)
-    db.executemany(
-        """INSERT INTO tracks
-           (id, path, caption, lyrics, title_raw, instrumental, bpm,
-            keyscale, timesignature, duration, duration_output,
-            file_modified, seed, lm_negative_prompt)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        [
-            (
-                t["id"], t["path"], t["caption"], t["lyrics"],
-                t["title_raw"], int(t["instrumental"]),
-                t["bpm"], t["keyscale"], t["timesignature"],
-                t["duration"], t["duration_output"],
-                t["file_modified"], t["seed"],
-                t["lm_negative_prompt"],
+    for t in tracks:
+        try:
+            db.execute(
+                """INSERT INTO tracks
+                   (id, path, caption, lyrics, title_raw, instrumental, bpm,
+                    keyscale, timesignature, duration, duration_output,
+                    file_modified, seed, lm_negative_prompt)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    t["id"], t["path"], t["caption"], t["lyrics"],
+                    t["title_raw"], int(t["instrumental"]),
+                    t["bpm"], t["keyscale"], t["timesignature"],
+                    t["duration"], t["duration_output"],
+                    t["file_modified"], t["seed"],
+                    t["lm_negative_prompt"],
+                ),
             )
-            for t in tracks
-        ],
-    )
+        except sqlite3.IntegrityError:
+            skipped.append({"id": t["id"], "path": t["path"], "reason": "duplicate id"})
+        except Exception as exc:
+            skipped.append({"id": t["id"], "path": t["path"], "reason": str(exc)})
     db.commit()
     db.close()
+    return skipped
 
 
 def get_all_tracks():
