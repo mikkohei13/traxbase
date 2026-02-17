@@ -22,6 +22,13 @@
     --color-dark-blue:   #0D1650;
 }
 
+h1, .icon {
+    background: linear-gradient(to right, var(--color-pink), var(--color-yellow), var(--color-accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 html, body {
     height: 100%;
 }
@@ -270,7 +277,6 @@ a:hover {
 .main-panel-placeholder .icon {
     font-size: 48px;
     margin-bottom: 16px;
-    opacity: 0.3;
 }
 
 /* === Main Panel Detail === */
@@ -279,7 +285,7 @@ a:hover {
     flex-direction: column;
     width: 100%;
     height: 100%;
-    padding: 32px;
+    padding: 20px 32px 32px 32px;
     gap: 20px;
 }
 
