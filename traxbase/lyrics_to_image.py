@@ -34,9 +34,9 @@ def generate_image(prompt: str, output_file: str):
     log.info("Image saved to %s", output_file)
 
 
-def lyrics_to_prompt(title: str, style: str, lyrics: str) -> str:
+def lyrics_to_prompt(title: str, style: str, lyrics: str, description: str = "") -> str:
     system_instruction = """
-Based on the following song details, decide a variation concept, artistic style, and a color palette suitable to illustrate the song and capture it's mood. Favor unique, colorful, and creative concepts that work in small sizes.
+Based on the following song details, decide a variation concept, artistic style, and a color palette suitable to illustrate the song and capture it's mood. Favor unique, colorful, and creative concepts that work in small sizes and have non-black background.
 Output these in the following json format, with maximum of 256 characters for each field. Don't include anything else in the output. 
 { "variation_concept": "...", "artistic_style": "...", "color_palette": "..." }
     """
@@ -50,9 +50,13 @@ Output these in the following json format, with maximum of 256 characters for ea
     # Truncate the song details
     title = title[:128]
     style = style[:256]
+    description = description[:512]
     lyrics = lyrics[:1024]
 
-    llm_prompt = f"Title: {title}\nStyle: {style}\nLyrics: {lyrics}"
+    llm_prompt = f"Title: {title}\nStyle: {style}"
+    if description:
+        llm_prompt += f"\nDescription: {description}"
+    llm_prompt += f"\nLyrics: {lyrics}"
     print(f"[lyrics_to_image] Gemini request:\n{llm_prompt}")
     response = client.models.generate_content(
         model="gemini-2.5-flash",
@@ -64,7 +68,7 @@ Output these in the following json format, with maximum of 256 characters for ea
     return raw_text
 
 
-def generate_track_image(title: str, style: str, lyrics: str, base_path: str):
+def generate_track_image(title: str, style: str, lyrics: str, base_path: str, *, description: str = ""):
     """Full pipeline: song details -> Gemini prompt -> Imagen image -> save to disk.
 
     Saves three files relative to base_path (path without extension):
@@ -73,7 +77,7 @@ def generate_track_image(title: str, style: str, lyrics: str, base_path: str):
       - {base_path}_prompts.json  (llm_prompt and image_prompt)
     """
     try:
-        raw_response = lyrics_to_prompt(title, style, lyrics)
+        raw_response = lyrics_to_prompt(title, style, lyrics, description)
         prompt_fields = parse_image_prompt_json(raw_response)
     except Exception:
         log.warning("Gemini prompt generation failed, using fallback defaults", exc_info=True)
@@ -97,7 +101,10 @@ def generate_track_image(title: str, style: str, lyrics: str, base_path: str):
         img.resize((200, 200), Image.LANCZOS).save(thumb_path)
     print(f"[lyrics_to_image] Thumbnail saved to {thumb_path}")
 
-    llm_prompt = f"Title: {title}\nStyle: {style}\nLyrics: {lyrics}"
+    llm_prompt = f"Title: {title}\nStyle: {style}"
+    if description:
+        llm_prompt += f"\nDescription: {description}"
+    llm_prompt += f"\nLyrics: {lyrics}"
     with open(prompts_path, "w") as f:
         json.dump({"llm_prompt": llm_prompt, "image_prompt": image_prompt}, f, indent=2)
     print(f"[lyrics_to_image] Prompts saved to {prompts_path}")

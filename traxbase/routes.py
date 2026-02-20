@@ -88,10 +88,11 @@ def track_generate_image(track_id):
     title = ud.get("custom_title") or track.get("title_raw") or "Album cover art illustration"
     style = track.get("caption") or ""
     lyrics = track.get("lyrics") or ""
+    description = ud.get("description") or ""
 
     try:
         os.makedirs(dest_dir, exist_ok=True)
-        generate_track_image(title, style, lyrics, base_path)
+        generate_track_image(title, style, lyrics, base_path, description=description)
     except Exception:
         log.exception("Image generation failed for track %s", track_id)
         for suffix in (".png", "_original.png", "_prompts.json"):
