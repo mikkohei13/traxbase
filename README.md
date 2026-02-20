@@ -24,9 +24,9 @@ The SQLite database (`traxbase.db`) is a derived cache — the filesystem (`./mu
 
 ## Upcoming features (keep these in mind but **don't develop unless asked**)
 
-- Allows user to save more data about each track, e.g. title, genre keywords, longer notes
 - Shows distinct icon for each track
-- Allows quick sorting and filtering of the tracks
+- State management: when title, checkboxes or description is changed, update the trtack info on sidebar and the editor view
+- Remember selected track and filters on rescans
 
 ## Development principles
 
