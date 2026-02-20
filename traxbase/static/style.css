@@ -122,7 +122,7 @@ h1 {
 
 .track {
     position: relative;
-    padding: 14px 24px 14px 86px;
+    padding: 14px 24px 14px 136px;
     padding-right: 116px;
     border-bottom: 1px solid var(--color-border);
     transition: background 0.12s;
@@ -132,8 +132,8 @@ h1 {
     position: absolute;
     left: 24px;
     top: 14px;
-    width: 50px;
-    height: 50px;
+    width: 100px;
+    height: 100px;
     border-radius: 4px;
     background: var(--color-surface-alt);
     border: 1px solid var(--color-border);
@@ -182,7 +182,7 @@ h1 {
 .track.active {
     background: var(--color-surface-alt-light);
     border-left: 3px solid var(--color-accent);
-    padding-left: 83px;
+    padding-left: 133px;
 }
 
 .track.active .track-thumb { left: 21px; }
@@ -198,6 +198,10 @@ h1 {
 
 .track-title.title_path { font-weight: 400; }
 .track-hidden .track-title { color: var(--pico-color); }
+
+.track-hidden .track-thumb {
+    display: none;
+}
 
 .track-id {
     font-size: 0.85rem;
@@ -292,6 +296,7 @@ h1 {
     flex-shrink: 0;
     width: 200px;
     height: 200px;
+    border-radius: 8px;
 }
 
 .detail-thumb-container img {
@@ -325,8 +330,28 @@ h1 {
     background: rgba(28, 201, 233, 0.06);
 }
 
+.btn-generate-image:disabled {
+    cursor: default;
+    color: var(--color-text-dimmer);
+    border-color: var(--color-border);
+    background: var(--color-surface-alt);
+}
+
 .btn-generate-image .btn-generate-icon {
     font-size: 32px;
+}
+
+.generate-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 .detail-title {

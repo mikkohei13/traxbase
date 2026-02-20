@@ -32,6 +32,24 @@ document.getElementById('filter-starred')?.addEventListener('change', applyFilte
 document.getElementById('filter-title')?.addEventListener('input', applyFilters);
 document.getElementById('filter-desc')?.addEventListener('input', applyFilters);
 
+/* === Track thumbnails in sidebar === */
+function setTrackThumb(trackEl, imgUrl) {
+    const thumb = trackEl.querySelector('.track-thumb');
+    if (thumb) {
+        thumb.style.backgroundImage = 'url(' + imgUrl + ')';
+        thumb.style.backgroundSize = 'cover';
+    }
+}
+
+document.querySelectorAll('.track-list .track').forEach(t => {
+    const id = t.dataset.id;
+    if (!id) return;
+    const imgUrl = '/music_image/' + encodeURIComponent(id) + '.png';
+    fetch(imgUrl, { method: 'HEAD' }).then(r => {
+        if (r.ok) setTrackThumb(t, imgUrl);
+    });
+});
+
 let currentTrackId = null;
 let userdataInitial = { custom_title: '', description: '', starred: false, suno: false, hide: false };
 
@@ -146,6 +164,42 @@ document.querySelector('.track-list')?.addEventListener('click', function(e) {
                 suno: !!data.suno,
                 hide: !!data.hide,
             };
+        });
+});
+
+/* === Generate image button === */
+document.querySelector('.detail-thumb-container')?.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn-generate-image');
+    if (!btn || btn.disabled) return;
+
+    const id = currentTrackId;
+    if (!id) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="generate-spinner"></span>Generating…';
+
+    fetch('/track/' + encodeURIComponent(id) + '/generate_image', { method: 'POST' })
+        .then(r => r.json().then(data => ({ status: r.status, data })))
+        .then(({ status, data }) => {
+            if (currentTrackId !== id) return;
+            if (data.ok || status === 409) {
+                const freshUrl = '/music_image/' + encodeURIComponent(id) + '.png?t=' + Date.now();
+                const img = document.createElement('img');
+                img.src = freshUrl;
+                img.alt = document.querySelector('.detail-title')?.textContent || '';
+                this.innerHTML = '';
+                this.appendChild(img);
+                const sidebarTrack = document.querySelector('.track[data-id="' + id + '"]');
+                if (sidebarTrack) setTrackThumb(sidebarTrack, freshUrl);
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="btn-generate-icon">🎨</span>Generate image';
+            }
+        })
+        .catch(() => {
+            if (currentTrackId !== id) return;
+            btn.disabled = false;
+            btn.innerHTML = '<span class="btn-generate-icon">🎨</span>Generate image';
         });
 });
 

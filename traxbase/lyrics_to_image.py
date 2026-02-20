@@ -1,14 +1,18 @@
+import json
+import logging
 import os
-from datetime import datetime
+import re
+
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from PIL import Image
 
-from llm_json_parser import parse_image_prompt_json, FALLBACK_DEFAULTS
+from traxbase.llm_json_parser import parse_image_prompt_json, FALLBACK_DEFAULTS
 
 load_dotenv()
 
-DEBUG = False
+log = logging.getLogger(__name__)
 
 client = genai.Client(
     vertexai=True,
@@ -17,23 +21,7 @@ client = genai.Client(
 )
 
 
-def _debug_print_image_response(response):
-    """Print image generation response metadata without the actual image bytes."""
-    import copy
-    for i, img in enumerate(response.generated_images):
-        print(f"  generated_images[{i}]:")
-        attrs = {k: v for k, v in vars(img).items() if k != "image"}
-        if attrs:
-            for k, v in attrs.items():
-                print(f"    {k}: {v}")
-        if img.image:
-            img_attrs = {k: v for k, v in vars(img.image).items()
-                         if k not in ("_image_bytes", "image_bytes")}
-            if img_attrs:
-                print(f"    image metadata: {img_attrs}")
-
-
-def generate_image(prompt: str, output_file: str = "output.png"):
+def generate_image(prompt: str, output_file: str):
     response = client.models.generate_images(
         model="imagen-3.0-fast-generate-001",
         prompt=prompt,
@@ -42,63 +30,53 @@ def generate_image(prompt: str, output_file: str = "output.png"):
             aspect_ratio="1:1",
         ),
     )
-    if DEBUG:
-        print("[DEBUG] Imagen API response:")
-        _debug_print_image_response(response)
     response.generated_images[0].image.save(output_file)
-    print(f"Image saved to {output_file}")
+    log.info("Image saved to %s", output_file)
 
 
 def lyrics_to_prompt(title: str, style: str, lyrics: str) -> str:
+    system_instruction = """
+Based on the following song details, decide a variation concept, artistic style, and a color palette suitable to illustrate the song and capture it's mood. Favor unique, colorful, and creative concepts that work in small sizes.
+Output these in the following json format, with maximum of 256 characters for each field. Don't include anything else in the output. 
+{ "variation_concept": "...", "artistic_style": "...", "color_palette": "..." }
+    """
+    print(f"[lyrics_to_image] System instruction: {system_instruction}")
+#    print(f"[lyrics_to_image] Song details: Title: {title}\nStyle: {style}\nLyrics: {lyrics}")
+
+    # If title contains more than 4 numbers, it is probably a UUID, replace with generic title
+    if re.search(r'\d{4,}', title):
+        title = "Album cover art image"
+
+    # Truncate the song details
+    title = title[:128]
+    style = style[:256]
+    lyrics = lyrics[:1024]
+
+    llm_prompt = f"Title: {title}\nStyle: {style}\nLyrics: {lyrics}"
+    print(f"[lyrics_to_image] Gemini request:\n{llm_prompt}")
     response = client.models.generate_content(
         model="gemini-2.5-flash",
-        contents=f"Title: {title}\nStyle: {style}\nLyrics: {lyrics}",
-        config={
-            "system_instruction": (
-                "Based on the following song details, decide a variation concept, artistic style, and a color palette suitable to illustrate the song and capture it's mood. Favor unique, colorful, and creative concepts that work in small sizes.\nOutput these in the following json format, with maximum of 256 characters for each field. Don't include anything else in the output. { \"variation_concept\": \"...\", \"artistic_style\": \"...\", \"color_palette\": \"...\" }"
-            ),
-        },
+        contents=llm_prompt,
+        config={"system_instruction": system_instruction},
     )
-    if DEBUG:
-        print(f"[DEBUG] Gemini API response:\n{response}")
     raw_text = response.text if response.text else None
+    print(f"[lyrics_to_image] Gemini response: {raw_text}")
     return raw_text
 
 
-if __name__ == "__main__":
-    title = "Album cover art"
-    style = "soft rock, acoustic ballad, chillwave, gentle young male vocals, youthful indie, hopeful, singer-songwriter, mellow tempo..."
-    lyrics = """
-[Intro]
-The lights were never meant for me
-Still I stood where I could see
-The echo of a distant race
-A quiet heart, a slower pace
+def generate_track_image(title: str, style: str, lyrics: str, base_path: str):
+    """Full pipeline: song details -> Gemini prompt -> Imagen image -> save to disk.
 
-[Verse 1]
-I trained to be the one in gold
-Chased every line I’d ever told
-But somewhere on the way to more
-I found a love worth losing for
-You weren’t the prize, you were the light
-The thing I missed in every fight
-I let go of the need to win
-And you let something new begin
-
-[Chorus]
-Second place, but first with you
-Didn’t need the crowd to prove
-All I wanted, all along
-Was where your quiet hands belong
-...
+    Saves three files relative to base_path (path without extension):
+      - {base_path}_original.png  (full-size Imagen output)
+      - {base_path}.png           (200x200 thumbnail)
+      - {base_path}_prompts.json  (llm_prompt and image_prompt)
     """
-    print(f"Generating image prompt from lyrics...")
-
     try:
         raw_response = lyrics_to_prompt(title, style, lyrics)
         prompt_fields = parse_image_prompt_json(raw_response)
-    except Exception as e:
-        print(f"Error generating prompt, using fallback defaults: {e}")
+    except Exception:
+        log.warning("Gemini prompt generation failed, using fallback defaults", exc_info=True)
         prompt_fields = dict(FALLBACK_DEFAULTS)
 
     image_prompt = (
@@ -106,10 +84,20 @@ Was where your quiet hands belong
         f" in the style of {prompt_fields['artistic_style']}"
         f" and color palette of {prompt_fields['color_palette']}"
     )
+    print(f"[lyrics_to_image] Imagen prompt: {image_prompt}")
 
-    print(f"Prompt fields: {prompt_fields}")
+    original_path = base_path + "_original.png"
+    thumb_path = base_path + ".png"
+    prompts_path = base_path + "_prompts.json"
 
-    print(f"Image prompt: {image_prompt}")
+    generate_image(prompt=image_prompt, output_file=original_path)
+    print(f"[lyrics_to_image] Original saved to {original_path}")
 
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    generate_image(prompt=image_prompt, output_file=f"./traxbase/images/{timestamp}_{title}.png")
+    with Image.open(original_path) as img:
+        img.resize((200, 200), Image.LANCZOS).save(thumb_path)
+    print(f"[lyrics_to_image] Thumbnail saved to {thumb_path}")
+
+    llm_prompt = f"Title: {title}\nStyle: {style}\nLyrics: {lyrics}"
+    with open(prompts_path, "w") as f:
+        json.dump({"llm_prompt": llm_prompt, "image_prompt": image_prompt}, f, indent=2)
+    print(f"[lyrics_to_image] Prompts saved to {prompts_path}")

@@ -133,6 +133,26 @@ def get_all_tracks():
     return tracks
 
 
+def get_track_by_id(track_id):
+    """Return a single track as a dict, or None if not found."""
+    db = get_db()
+    try:
+        row = db.execute(
+            """SELECT id, path, caption, lyrics, title_raw, instrumental,
+                      bpm, keyscale, timesignature, duration, duration_output,
+                      file_modified, seed, lm_negative_prompt
+               FROM tracks WHERE id = ?""",
+            (track_id,),
+        ).fetchone()
+    except sqlite3.OperationalError:
+        row = None
+    finally:
+        db.close()
+    if row:
+        return dict(row)
+    return None
+
+
 def get_track_userdata(track_id):
     """Return userdata for a single track, or empty defaults."""
     db = get_userdata_db()
