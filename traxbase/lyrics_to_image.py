@@ -8,11 +8,29 @@ from llm_json_parser import parse_image_prompt_json, FALLBACK_DEFAULTS
 
 load_dotenv()
 
+DEBUG = True
+
 client = genai.Client(
     vertexai=True,
     project=os.environ["GOOGLE_CLOUD_PROJECT"],
     location=os.environ.get("GOOGLE_CLOUD_LOCATION", "global"),
 )
+
+
+def _debug_print_image_response(response):
+    """Print image generation response metadata without the actual image bytes."""
+    import copy
+    for i, img in enumerate(response.generated_images):
+        print(f"  generated_images[{i}]:")
+        attrs = {k: v for k, v in vars(img).items() if k != "image"}
+        if attrs:
+            for k, v in attrs.items():
+                print(f"    {k}: {v}")
+        if img.image:
+            img_attrs = {k: v for k, v in vars(img.image).items()
+                         if k not in ("_image_bytes", "image_bytes")}
+            if img_attrs:
+                print(f"    image metadata: {img_attrs}")
 
 
 def generate_image(prompt: str, output_file: str = "output.png"):
@@ -24,6 +42,9 @@ def generate_image(prompt: str, output_file: str = "output.png"):
             aspect_ratio="1:1",
         ),
     )
+    if DEBUG:
+        print("[DEBUG] Imagen API response:")
+        _debug_print_image_response(response)
     response.generated_images[0].image.save(output_file)
     print(f"Image saved to {output_file}")
 
@@ -34,16 +55,18 @@ def lyrics_to_prompt(title: str, style: str, lyrics: str) -> str:
         contents=f"Title: {title}\nStyle: {style}\nLyrics: {lyrics}",
         config={
             "system_instruction": (
-                "Based on the following song details, decide a variation concept, artistic style, and a color palette suitable to illustrate the song and capture it's mood.\nOutput these in the following json format, with maximum of 256 characters for each field. Don't include anything else in the output. { \"variation_concept\": \"...\", \"artistic_style\": \"...\", \"color_palette\": \"...\" }"
+                "Based on the following song details, decide a variation concept, artistic style, and a color palette suitable to illustrate the song and capture it's mood. Favor unique, colorful, and creative concepts that work in small sizes.\nOutput these in the following json format, with maximum of 256 characters for each field. Don't include anything else in the output. { \"variation_concept\": \"...\", \"artistic_style\": \"...\", \"color_palette\": \"...\" }"
             ),
         },
     )
+    if DEBUG:
+        print(f"[DEBUG] Gemini API response:\n{response}")
     raw_text = response.text if response.text else None
     return raw_text
 
 
 if __name__ == "__main__":
-    title = "Second Place"
+    title = "Album cover art"
     style = "soft rock, acoustic ballad, chillwave, gentle young male vocals, youthful indie, hopeful, singer-songwriter, mellow tempo..."
     lyrics = """
 [Intro]
