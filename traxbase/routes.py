@@ -1,3 +1,5 @@
+import os
+
 from flask import Blueprint, jsonify, render_template, request, send_from_directory
 
 from traxbase.db import (
@@ -10,6 +12,8 @@ from traxbase.db import (
 from traxbase.scanner import MUSIC_DIR, scan_music_dir
 
 main = Blueprint("main", __name__)
+
+MUSIC_IMAGES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "music_images")
 
 ensure_userdata_schema()
 
@@ -35,6 +39,14 @@ def update():
 @main.route("/audio/<path:filepath>")
 def serve_audio(filepath):
     return send_from_directory(MUSIC_DIR, filepath)
+
+
+@main.route("/music_image/<track_id>.png")
+def serve_music_image(track_id):
+    subdir = track_id[0]
+    return send_from_directory(
+        os.path.join(MUSIC_IMAGES_DIR, subdir), track_id + ".png"
+    )
 
 
 @main.route("/track/<track_id>/userdata")

@@ -122,10 +122,21 @@ h1 {
 
 .track {
     position: relative;
-    padding: 14px 24px;
+    padding: 14px 24px 14px 86px;
     padding-right: 116px;
     border-bottom: 1px solid var(--color-border);
     transition: background 0.12s;
+}
+
+.track-thumb {
+    position: absolute;
+    left: 24px;
+    top: 14px;
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
 }
 
 .track-toggle,
@@ -171,8 +182,10 @@ h1 {
 .track.active {
     background: var(--color-surface-alt-light);
     border-left: 3px solid var(--color-accent);
-    padding-left: 21px;
+    padding-left: 83px;
 }
+
+.track.active .track-thumb { left: 21px; }
 
 .track-title {
     font-weight: 600;
@@ -266,8 +279,54 @@ h1 {
 }
 
 .detail-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 16px;
+}
+
+.detail-header-info { flex: 1; min-width: 0; }
+
+.detail-thumb-container {
+    flex-shrink: 0;
+    width: 200px;
+    height: 200px;
+}
+
+.detail-thumb-container img {
+    width: 200px;
+    height: 200px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid var(--color-border);
+}
+
+.btn-generate-image {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 6px;
+    background: var(--color-surface-alt);
+    border: 1px dashed var(--color-border);
+    color: var(--color-text-dimmer);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.btn-generate-image:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: rgba(28, 201, 233, 0.06);
+}
+
+.btn-generate-image .btn-generate-icon {
+    font-size: 32px;
 }
 
 .detail-title {

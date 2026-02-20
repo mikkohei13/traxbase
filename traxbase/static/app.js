@@ -87,6 +87,32 @@ document.querySelector('.track-list')?.addEventListener('click', function(e) {
     detail.querySelector('.detail-title').textContent = title;
     detail.querySelector('.detail-id').textContent = id;
 
+    const thumbContainer = detail.querySelector('.detail-thumb-container');
+    thumbContainer.innerHTML = '';
+    const imgUrl = '/music_image/' + encodeURIComponent(id) + '.png';
+    fetch(imgUrl, { method: 'HEAD' })
+        .then(r => {
+            if (currentTrackId !== id) return;
+            if (r.ok) {
+                const img = document.createElement('img');
+                img.src = imgUrl;
+                img.alt = title;
+                thumbContainer.appendChild(img);
+            } else {
+                const btn = document.createElement('button');
+                btn.className = 'btn-generate-image';
+                btn.innerHTML = '<span class="btn-generate-icon">🎨</span>Generate image';
+                thumbContainer.appendChild(btn);
+            }
+        })
+        .catch(() => {
+            if (currentTrackId !== id) return;
+            const btn = document.createElement('button');
+            btn.className = 'btn-generate-image';
+            btn.innerHTML = '<span class="btn-generate-icon">🎨</span>Generate image';
+            thumbContainer.appendChild(btn);
+        });
+
     const audio = detail.querySelector('.detail-audio');
     audio.src = '/audio/' + encodeURI(path);
     audio.load();

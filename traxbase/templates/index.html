@@ -31,6 +31,7 @@
                      data-starred="{{ '1' if track.starred else '0' }}"
                      data-description="{{ track.description or '' }}"
                      data-caption="{{ track.caption or '' }}">
+                    <div class="track-thumb"></div>
                     <button class="track-toggle" aria-label="Expand track">▸</button>
                     <button class="track-open" aria-label="Open track" title="Open in player">▶</button>
                     <h4 class="track-title {{ 'title_path' if not track.custom_title and not track.title_raw else '' }}">{{ track.display_title }}{% if track.starred %} <span class="icon star">Starred</span>{% endif %}{% if track.suno %} <span class="icon">Suno</span>{% endif %}</h4>
@@ -69,8 +70,11 @@
             </div>
             <div class="main-panel-detail" style="display:none;">
                 <div class="detail-header">
-                    <h2 class="detail-title"></h2>
-                    <div class="detail-id"></div>
+                    <div class="detail-header-info">
+                        <h2 class="detail-title"></h2>
+                        <div class="detail-id"></div>
+                    </div>
+                    <div class="detail-thumb-container"></div>
                 </div>
                 <div class="detail-player">
                     <audio class="detail-audio" controls preload="metadata"></audio>

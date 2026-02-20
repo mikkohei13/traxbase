@@ -8,7 +8,7 @@ from llm_json_parser import parse_image_prompt_json, FALLBACK_DEFAULTS
 
 load_dotenv()
 
-DEBUG = True
+DEBUG = False
 
 client = genai.Client(
     vertexai=True,
