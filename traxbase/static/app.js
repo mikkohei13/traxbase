@@ -172,6 +172,11 @@ document.querySelector('.detail-thumb-container')?.addEventListener('click', fun
     const btn = e.target.closest('.btn-generate-image');
     if (!btn || btn.disabled) return;
 
+    if (hasUserdataChanges()) {
+        alert('Please save your changes before generating an image.');
+        return;
+    }
+
     const id = currentTrackId;
     if (!id) return;
 

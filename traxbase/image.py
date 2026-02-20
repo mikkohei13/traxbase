@@ -30,6 +30,6 @@ def generate_image(prompt: str, output_file: str = "output.png"):
 if __name__ == "__main__":
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     generate_image(
-        prompt="City lights, in the style of Elevated Urban Solitude, Soft Impressionism, Twilight Indigo and Amber Glow, with the mood of soft rock, acoustic ballad, gentle vocals, guitar, piano, indie, hopeful, singer-songwriter, mellow tempo. No human figures.",
-        output_file=f"./traxbase/images/{timestamp}_citylights_structuredkeywords.png",
+        prompt="cute dragon 1980s retro kawaii style, on a black background.",
+        output_file=f"./traxbase/images/{timestamp}_1980s_arcade_retro_game_monster_image.png",
     )

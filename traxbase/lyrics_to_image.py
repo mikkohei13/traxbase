@@ -34,9 +34,24 @@ def generate_image(prompt: str, output_file: str):
     log.info("Image saved to %s", output_file)
 
 
+def remove_short_tokens(text: str) -> str:
+    """Remove single/double letter words and short numbers/version tags from text.
+
+    Examples:
+        "Song Title A" -> "Song Title"
+        "This is a song title" -> "This song title"
+        "My Song v2" -> "My Song"
+        "My song 67" -> "My song"
+        "Long song name here vX" -> "Long song name here"
+    """
+    tokens = text.split()
+    cleaned = [t for t in tokens if not re.match(r'^(v?\d{1,2}|[a-zA-Z]{1,2})$', t)]
+    return ' '.join(cleaned).strip() if cleaned else text
+
+
 def lyrics_to_prompt(title: str, style: str, lyrics: str, description: str = "") -> str:
     system_instruction = """
-Based on the following song details, decide a variation concept, artistic style, and a color palette suitable to illustrate the song and capture it's mood. Favor unique, colorful, and creative concepts that work in small sizes and have non-black background.
+Based on the following song details, decide a variation concept, artistic style, and a color palette suitable to illustrate the song and capture it's mood. Favor unique, colorful, and creative concepts that work in small sizes. Also specify background color, which should be neither black nor dark.
 Output these in the following json format, with maximum of 256 characters for each field. Don't include anything else in the output. 
 { "variation_concept": "...", "artistic_style": "...", "color_palette": "..." }
     """
@@ -47,11 +62,20 @@ Output these in the following json format, with maximum of 256 characters for ea
     if re.search(r'\d{4,}', title):
         title = "Album cover art image"
 
+    # If title has single letters or version numbers, remove them (e.g. "Song Title A" should become "Song Title", and "A Song title" should become "Song title")
+    title = remove_short_tokens(title)
+
     # Truncate the song details
     title = title[:128]
     style = style[:256]
     description = description[:512]
     lyrics = lyrics[:1024]
+
+    # If description contains # or //, remove everything after it
+    if '#' in description:
+        description = description.split('#')[0]
+    if '//' in description:
+        description = description.split('//')[0]
 
     llm_prompt = f"Title: {title}\nStyle: {style}"
     if description:
