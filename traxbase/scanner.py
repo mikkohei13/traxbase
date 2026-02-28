@@ -55,6 +55,37 @@ def _int_field(meta, key):
         return None
 
 
+def _normalize_metadata(raw: dict) -> dict:
+    """Normalize metadata to ace-gui-v1 flat structure. Detects ace-api-v1
+    (task_id + result) and ace-gui-v1 (flat) formats."""
+    if "task_id" not in raw or "result" not in raw:
+        return raw  # ace-gui-v1: already flat
+    result = raw.get("result") or {}
+    metas = result.get("metas") or {}
+    lyrics = raw.get("lyrics") or result.get("lyrics") or metas.get("lyrics")
+    caption = raw.get("prompt") or result.get("prompt") or metas.get("prompt")
+    seed_val = result.get("seed_value")
+    seed = None
+    if seed_val is not None:
+        parts = str(seed_val).split(",")
+        if parts:
+            try:
+                seed = int(parts[0].strip())
+            except (ValueError, TypeError):
+                pass
+    return {
+        "lyrics": lyrics,
+        "caption": caption,
+        "bpm": metas.get("bpm"),
+        "keyscale": metas.get("keyscale"),
+        "timesignature": metas.get("timesignature"),
+        "duration": metas.get("duration"),
+        "instrumental": False,
+        "seed": seed,
+        "lm_negative_prompt": None,
+    }
+
+
 def scan_music_dir():
     """Scan the music directory for audio files and their JSON metadata."""
     found = []
@@ -69,8 +100,12 @@ def scan_music_dir():
                 try:
                     with open(json_path) as f:
                         meta = json.load(f)
+                    if isinstance(meta, dict):
+                        meta = _normalize_metadata(meta)
                 except (json.JSONDecodeError, OSError):
                     pass
+                if not isinstance(meta, dict):
+                    meta = {}
 
             lyrics = _str_field(meta, "lyrics", 4096)
             title_raw = parse_title_raw(lyrics)
